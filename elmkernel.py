@@ -5,27 +5,27 @@ from tempfile import TemporaryDirectory
 
 
 class ElmKernel(Kernel):
-    implementation = 'Elm'
+    implementation = 'elm_kernel'
     implementation_version = '1.0'
     language = 'no-op'
     language_version = '0.1'
-    language_info = {'mimetype': 'text/html'}
+    language_info = {'name': 'elm',
+                     'codemirror_mode': 'elm',
+                     'mimetype': 'text/x-elm',
+                     'file_extension': '.elm'}
     banner = "Display Elm output"
 
     def do_execute(self, code, silent,
                    store_history=True,
                    user_expressions=None,
                    allow_stdin=False):
-        # if not silent:
-        #    stream_content = {'name': 'stdout', 'text': code}
-        #    self.send_response(self.iopub_socket, 'stream', stream_content)
-
         with TemporaryDirectory() as tmpdirname:
             infile = os.path.join(tmpdirname, 'input.elm')
             outfile = os.path.join(tmpdirname, 'index.html')
 
             with open(infile, mode='wt') as f:
                 f.write(code)
+
             #  TODO: Deal with exceptions from this call
             subprocess.run(['elm-make', infile, '--yes',
                             '--output={}'.format(outfile)],
@@ -35,10 +35,15 @@ class ElmKernel(Kernel):
             with open(outfile, mode='rt') as f:
                 html = f.read()
 
-        display_content = {'name': 'stdout',
-                           'source': 'Elm',
-                           'data': {'text/html': html}}
-        self.send_response(self.iopub_socket, 'display_data', display_content)
+        self.send_response(
+            self.iopub_socket,
+            'display_data',
+            {
+                'metadata': {},
+                'data': {
+                    'text/html': html
+                }
+            })
 
         return {
             'status': 'ok',
