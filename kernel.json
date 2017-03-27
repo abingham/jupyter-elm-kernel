@@ -1,0 +1,3 @@
+{"argv":["python","-m","elmkernel", "-f", "{connection_file}"],
+ "display_name":"Elm"
+}
