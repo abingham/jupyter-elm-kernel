@@ -19,6 +19,10 @@ class ElmKernel(Kernel):
                    store_history=True,
                    user_expressions=None,
                    allow_stdin=False):
+
+        # TODO: pull module name from `code`
+        module_name = "Main"
+
         with TemporaryDirectory() as tmpdirname:
             infile = os.path.join(tmpdirname, 'input.elm')
             outfile = os.path.join(tmpdirname, 'index.js')
@@ -28,14 +32,36 @@ class ElmKernel(Kernel):
 
             #  TODO: Deal with exceptions from this call
             subprocess.run(['elm-make', infile, '--yes',
-                            '--output={}'.format(outfile)],
-                           cwd=tmpdirname,
-                           check=True)
+                        '--output={}'.format(outfile)],
+                       cwd=tmpdirname,
+                       check=True)
+
 
             with open(outfile, mode='rt') as f:
                 javascript = f.read()
 
-        javascript = javascript + "; var mountNode = document.getElementById('elm-div'); Elm.Main.embed(mountNode);"
+
+        div_id = 'elm-div-' + str(self.execution_count)
+
+        javascript = """ 
+            var defineElm = function(cb) {
+                if (this.Elm) { 
+                    this.oldElm = this.Elm;
+                }
+                var define = null;
+            
+        """ + javascript + """
+            
+                cb();
+            }
+            ;
+
+            var obj = new Object();
+            defineElm.bind(obj)(function(){
+                var mountNode = document.getElementById('""" + div_id + """'); 
+                obj.Elm. """ + module_name + """.embed(mountNode);
+            }); 
+        """
 
         self.send_response(
             self.iopub_socket,
@@ -43,7 +69,7 @@ class ElmKernel(Kernel):
             {
                 'metadata': {},
                 'data': {
-                    'text/html': '<div id="elm-div"></div>'
+                    'text/html': '<div id="' + div_id + '"></div>'
                 }
             }
         )
