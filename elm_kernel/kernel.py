@@ -21,7 +21,7 @@ class ElmKernel(Kernel):
                    allow_stdin=False):
         with TemporaryDirectory() as tmpdirname:
             infile = os.path.join(tmpdirname, 'input.elm')
-            outfile = os.path.join(tmpdirname, 'index.html')
+            outfile = os.path.join(tmpdirname, 'index.js')
 
             with open(infile, mode='wt') as f:
                 f.write(code)
@@ -33,7 +33,9 @@ class ElmKernel(Kernel):
                            check=True)
 
             with open(outfile, mode='rt') as f:
-                html = f.read()
+                javascript = f.read()
+
+        javascript = javascript + "; var mountNode = document.getElementById('elm-div'); Elm.Main.embed(mountNode);"
 
         self.send_response(
             self.iopub_socket,
@@ -41,9 +43,32 @@ class ElmKernel(Kernel):
             {
                 'metadata': {},
                 'data': {
-                    'text/html': html
+                    'text/html': '<div id="elm-div"></div>'
+                }
+            }
+        )
+
+        self.send_response(
+            self.iopub_socket,
+            'display_data',
+            {
+                'metadata': {},
+                'data': {
+                    'application/javascript': javascript
                 }
             })
+
+        # self.send_response(
+        #     self.iopub_socket,
+        #     'display_data',
+        #     {
+        #         'metadata': {},
+        #         'data': {
+        #             'application/javascript': 'var mountNode = document.getElementById("elm-div"); Elm.Main.embed(mountNode);'
+        #         }
+        #     }
+
+        # )
 
         return {
             'status': 'ok',
