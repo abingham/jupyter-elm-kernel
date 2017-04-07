@@ -1,5 +1,7 @@
-This only vaguely works right now. I'm still figuring it all out. Any help would
-be great.
+This kernel adds support for Elm to [Jupyter](http://jupyter.org/) notebooks.
+
+While basic functionality is in place, this is still very much a work in
+progress. I'm still figuring it all out. Any help, ideas, etc. would be great.
 
 # Installation
 
