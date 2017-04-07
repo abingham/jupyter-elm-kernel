@@ -17,4 +17,5 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
     ],
+    install_requires=['jupyter'],
 )
