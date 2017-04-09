@@ -76,25 +76,30 @@ class ElmKernel(Kernel):
 
         div_id = 'elm-div-' + str(self.execution_count)
 
-        javascript = """
-            var defineElm = function(cb) {
-                if (this.Elm) {
+        template = """
+            var defineElm = function(cb) {{
+                if (this.Elm) {{
                     this.oldElm = this.Elm;
-                }
+                }}
                 var define = null;
 
-        """ + javascript + """
+                {js}
 
                 cb();
-            }
+            }}
             ;
 
             var obj = new Object();
-            defineElm.bind(obj)(function(){
-                var mountNode = document.getElementById('""" + div_id + """');
-                obj.Elm. """ + module_name + """.embed(mountNode);
-            });
+            defineElm.bind(obj)(function(){{
+                var mountNode = document.getElementById('{div_id}');
+                obj.Elm. {module_name}.embed(mountNode);
+            }});
         """
+
+        javascript = template.format(
+            js=javascript,
+            module_name=module_name,
+            div_id=div_id)
 
         self.send_response(
             self.iopub_socket,
@@ -116,18 +121,6 @@ class ElmKernel(Kernel):
                     'application/javascript': javascript
                 }
             })
-
-        # self.send_response(
-        #     self.iopub_socket,
-        #     'display_data',
-        #     {
-        #         'metadata': {},
-        #         'data': {
-        #             'application/javascript': 'var mountNode = document.getElementById("elm-div"); Elm.Main.embed(mountNode);'
-        #         }
-        #     }
-
-        # )
 
         return {
             'status': 'ok',
