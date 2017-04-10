@@ -5,7 +5,14 @@ progress. I'm still figuring it all out. Any help, ideas, etc. would be great.
 
 # Installation
 
-Install the package from source:
+Either install from a repository using `pip`:
+
+```
+pip install elm_kernel
+```
+
+or install the package from source:
+
 ```
 pip install -e .
 ```
@@ -38,7 +45,7 @@ all of the executed but uncompiled code cells (i.e. everything since the start
 of the kernel or the last `-- compile-code` cell). It then compiles the
 concatenated code, returning the result to the notebook.
 
-For a concrete example of this, see 
+For a concrete example of this, see
 [`examples/the-elm-architecture.ipynb`](https://github.com/abingham/jupyter-elm-kernel/blob/master/examples/the-elm-architecture.ipynb).
 
 This is a bit hacky, and we're actively searching for a better alternative.
