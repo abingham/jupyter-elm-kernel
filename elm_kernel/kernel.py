@@ -1,4 +1,5 @@
 from collections import deque
+import contextlib
 import io
 from ipykernel.kernelbase import Kernel
 import os
@@ -21,6 +22,10 @@ class ElmKernel(Kernel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._code = []
+        self._tempdir = TemporaryDirectory()
+
+    def do_shutdown(self, restart):
+        self._tempdir.cleanup()
 
     def do_execute(self, code, silent,
                    store_history=True,
@@ -30,7 +35,9 @@ class ElmKernel(Kernel):
 
         if self._should_compile:
             try:
-                self._compile()
+                code = "\n".join(self._code)
+                self._code = []
+                self._compile(code)
             except Exception as exc:
                 self._send_error_result(str(exc))
                 return {
@@ -45,13 +52,21 @@ class ElmKernel(Kernel):
             'user_expressions': {},
         }
 
-    def _compile(self):
-        code = "\n".join(self._code)
-        self._code = []
+    @contextlib.contextmanager
+    def _tempfile(self, filename):
+        """Yield `filename` inside the tempdir, but don't actually create the file.
+        Then, on exit, delete the file if it exists.
+        """
+        try:
+            path = os.path.join(self._tempdir.name, filename)
+            yield path
+        finally:
+            with contextlib.suppress(OSError):
+                os.remove(path)
 
-        with TemporaryDirectory() as tmpdirname:
-            infile = os.path.join(tmpdirname, 'input.elm')
-            outfile = os.path.join(tmpdirname, 'index.js')
+    def _compile(self, code):
+        with self._tempfile('input.elm') as infile,\
+             self._tempfile('index.js') as outfile:
 
             with open(infile, mode='wt') as f:
                 f.write(code)
@@ -59,8 +74,8 @@ class ElmKernel(Kernel):
             try:
                 subprocess.run(
                     ['elm-make', infile, '--yes',
-                     '--output={}'.format(outfile)],
-                    cwd=tmpdirname,
+                        '--output={}'.format(outfile)],
+                    cwd=self._tempdir.name,
                     check=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
