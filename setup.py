@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='elm_kernel',
-    version='0.1',
+    version='0.2',
     packages=['elm_kernel'],
     description='Jupyter kernel for executing Elm code',
     long_description=readme,
