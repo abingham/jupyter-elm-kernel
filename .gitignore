@@ -3,3 +3,5 @@ MANIFEST
 .ipynb_checkpoints
 dist
 build
+.ropeproject
+*.egg-info
