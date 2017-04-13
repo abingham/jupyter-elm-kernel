@@ -12,7 +12,7 @@ from IPython.utils.tempdir import TemporaryDirectory
 kernel_json = {
     "argv": [sys.executable, "-m", "elm_kernel", "-f", "{connection_file}"],
     "display_name": "Elm",
-    "language": "text",
+    "language": "elm",
 }
 
 
