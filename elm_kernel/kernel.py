@@ -95,8 +95,8 @@ class ElmKernel(Kernel):
     @property
     def _should_compile(self):
         assert self._code, "Should not be querying for compilation with no code!"
-        last_line = deque(io.StringIO(self._code[-1]), 1)[0]
-        return last_line == '-- compile-code'
+        lines = deque(io.StringIO(self._code[-1]), 1)
+        return lines[0] == '-- compile-code' if lines else False
 
     def _send_error_result(self, msg):
         """Send an error message to the client.
