@@ -3,6 +3,9 @@ This kernel adds support for Elm to [Jupyter](http://jupyter.org/) notebooks.
 While basic functionality is in place, this is still very much a work in
 progress. I'm still figuring it all out. Any help, ideas, etc. would be great.
 
+# Requirements
+- Python 3.6+
+
 # Installation
 
 Either install from a repository using `pip`:
