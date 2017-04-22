@@ -19,4 +19,5 @@ install:
 
 script:
   - cd tests
+  - jupyter nbconvert --ClearOutputPreprocessor.enabled=True  --inplace --to notebook test.ipynb
   - jupyter nbconvert --execute --inplace --to notebook test.ipynb
