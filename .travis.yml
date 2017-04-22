@@ -12,6 +12,7 @@ matrix:
     - python: nightly
 
 install:
+  - pip install six
   - pip install -e .
   - python -m elm_kernel.install
   - pip install -r tests/requirements.txt
