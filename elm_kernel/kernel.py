@@ -91,6 +91,9 @@ class ElmKernel(Kernel):
                 # user but we don't count this as an error. A compiler error
                 # might actually be the desired output of the cell.
                 self._send_error_result(err.stdout)
+            except Exception as err:
+                self._send_error_result(repr(err))
+                raise
 
     @property
     def _should_compile(self):
