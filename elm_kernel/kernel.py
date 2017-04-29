@@ -66,7 +66,7 @@ class ElmKernel(Kernel):
                 os.remove(path)
 
     def _compile(self, code):
-        self.copy_elm_package_file_to_tempdir()
+        self._copy_elm_package_file_to_tempdir()
 
         with self._tempfile('input.elm') as infile,\
              self._tempfile('index.js') as outfile:
@@ -176,7 +176,7 @@ class ElmKernel(Kernel):
                 }
             })
 
-    def copy_elm_package_file_to_tempdir(self):
+    def _copy_elm_package_file_to_tempdir(self):
         """Copy elm-package.json to temporary directory where elm code is compiled
         """
         # existence of elm-package.json is not mandatory
