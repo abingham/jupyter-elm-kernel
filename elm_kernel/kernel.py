@@ -179,6 +179,10 @@ class ElmKernel(Kernel):
     def copy_elm_package_file_to_tempdir(self):
         """Copy elm-package.json to temporary directory where elm code is compiled
         """
+        # existence of elm-package.json is not mandatory
+        if not os.path.isfile('elm-package.json'):
+            return
+
         try:
             shutil.copy('elm-package.json', self._tempdir.name)
         except PermissionError:
