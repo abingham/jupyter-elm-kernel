@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
+import shutil
 
 
 class ElmKernel(Kernel):
@@ -65,6 +66,8 @@ class ElmKernel(Kernel):
                 os.remove(path)
 
     def _compile(self, code):
+        self.copy_elm_package_file_to_tempdir()
+
         with self._tempfile('input.elm') as infile,\
              self._tempfile('index.js') as outfile:
 
@@ -173,6 +176,15 @@ class ElmKernel(Kernel):
                 }
             })
 
+    def copy_elm_package_file_to_tempdir(self):
+        """Copy elm-package.json to temporary directory where elm code is compiled
+        """
+        try:
+            shutil.copy('elm-package.json', self._tempdir.name)
+        except PermissionError:
+            self._send_error_result('Permission error: could not copy elm-package.json to {dir}'.format(
+                dir=self._tempdir.name
+            ))
 
 if __name__ == '__main__':
     from ipykernel.kernelapp import IPKernelApp
