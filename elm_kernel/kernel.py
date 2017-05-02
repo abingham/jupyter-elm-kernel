@@ -180,15 +180,8 @@ class ElmKernel(Kernel):
         """Copy elm-package.json to temporary directory where elm code is compiled
         """
         # existence of elm-package.json is not mandatory
-        if not os.path.isfile('elm-package.json'):
-            return
-
-        try:
+        if os.path.isfile('elm-package.json'):
             shutil.copy('elm-package.json', self._tempdir.name)
-        except PermissionError:
-            self._send_error_result('Permission error: could not copy elm-package.json to {dir}'.format(
-                dir=self._tempdir.name
-            ))
 
 if __name__ == '__main__':
     from ipykernel.kernelapp import IPKernelApp
