@@ -3,10 +3,10 @@ import contextlib
 import io
 from ipykernel.kernelbase import Kernel
 import os
+import shutil
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
-import shutil
 
 
 class ElmKernel(Kernel):
