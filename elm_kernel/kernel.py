@@ -3,6 +3,7 @@ import contextlib
 import io
 from ipykernel.kernelbase import Kernel
 import os
+import shutil
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
@@ -65,6 +66,8 @@ class ElmKernel(Kernel):
                 os.remove(path)
 
     def _compile(self, code):
+        self._copy_elm_package_file_to_tempdir()
+
         with self._tempfile('input.elm') as infile,\
              self._tempfile('index.js') as outfile:
 
@@ -173,6 +176,12 @@ class ElmKernel(Kernel):
                 }
             })
 
+    def _copy_elm_package_file_to_tempdir(self):
+        """Copy elm-package.json to temporary directory where elm code is compiled
+        """
+        # existence of elm-package.json is not mandatory
+        if os.path.isfile('elm-package.json'):
+            shutil.copy('elm-package.json', self._tempdir.name)
 
 if __name__ == '__main__':
     from ipykernel.kernelapp import IPKernelApp
