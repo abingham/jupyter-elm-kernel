@@ -1,6 +1,6 @@
 # Copied from the echo_kernel example:
 # https://github.com/jupyter/echo_kernel/blob/master/echo_kernel/install.py
-
+#!/usr/bin/python3
 import argparse
 import json
 import os
@@ -24,7 +24,7 @@ def install_my_kernel_spec(user=True, prefix=None):
 
         print('Installing Jupyter kernel spec')
         KernelSpecManager().install_kernel_spec(
-            td, 'elm', user=user, replace=True, prefix=prefix)
+            td, 'elm', user=user, prefix=prefix)
 
 
 def _is_root():
@@ -53,8 +53,13 @@ def main(argv=None):
     if not args.prefix and not _is_root():
         args.user = True
 
+    if args.user:
+        print("Elm Kernel will be Installed to per-user jupyter kernel registry.")
+    else:
+        print("Elm Kernel will be Installed to global jupyter kernel registry.")
+
     install_my_kernel_spec(user=args.user, prefix=args.prefix)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

@@ -11,9 +11,9 @@ from tempfile import TemporaryDirectory
 
 class ElmKernel(Kernel):
     implementation = 'elm_kernel'
-    implementation_version = '1.0'
+    implementation_version = '1.1'
     language = 'no-op'
-    language_version = '0.1'
+    language_version = '0.19'
     language_info = {'name': 'elm',
                      'codemirror_mode': 'elm',
                      'mimetype': 'text/x-elm',
@@ -34,7 +34,7 @@ class ElmKernel(Kernel):
                    allow_stdin=False):
         self._code.append(code)
 
-        if self._should_compile:
+        if self._should_compile():
             try:
                 code = "\n".join(self._code)
                 self._code = []
@@ -76,7 +76,7 @@ class ElmKernel(Kernel):
 
             try:
                 subprocess.run(
-                    ['elm-make', infile, '--yes',
+                    ['elm make', infile, '--yes',
                         '--output={}'.format(outfile)],
                     cwd=self._tempdir.name,
                     check=True,
@@ -98,7 +98,6 @@ class ElmKernel(Kernel):
                 self._send_error_result(repr(err))
                 raise
 
-    @property
     def _should_compile(self):
         assert self._code, "Should not be querying for compilation with no code!"
         lines = deque(io.StringIO(self._code[-1]), 1)
