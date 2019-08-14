@@ -64,25 +64,49 @@ class ElmKernel(Kernel):
         finally:
             with contextlib.suppress(OSError):
                 os.remove(path)
+    
+    def _elm_init(self):
+        ''' Generate an init file in the temporary directory
+        '''
+        proc = subprocess.Popen(
+            ['elm', 'init'],
+            cwd=self._tempdir.name,
+            stdin=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding=sys.getdefaultencoding())
+
+        # respond to prompt in 'elm init'
+        proc.communicate(input="y\n")
+        proc.wait()
+
+    def _elm_make(self, infile, outfile):
+
+        subprocess.run(
+            ['elm', 'make', 
+                infile, '--output={}'.format(outfile)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            cwd=self._tempdir.name,
+            encoding=sys.getdefaultencoding())
+
 
     def _compile(self, code):
-        self._copy_elm_package_file_to_tempdir()
+        self._copy_elm_json_file_to_tempdir()
 
         with self._tempfile('input.elm') as infile,\
-             self._tempfile('index.js') as outfile:
+             self._tempfile('index.js')  as outfile,\
+             self._tempfile('elm.json')  as elm_json:
 
             with open(infile, mode='wt') as f:
                 f.write(code)
-
+            
             try:
-                subprocess.run(
-                    ['elm make', infile, '--yes',
-                        '--output={}'.format(outfile)],
-                    cwd=self._tempdir.name,
-                    check=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    encoding=sys.getdefaultencoding())
+                # if elm.json doesn't exist yet, create it
+                if not os.path.isfile(elm_json):
+                    self._elm_init()
+                
+                self._elm_make(infile, outfile)
 
                 with open(outfile, mode='rt') as f:
                     javascript = f.read()
@@ -94,9 +118,11 @@ class ElmKernel(Kernel):
                 # user but we don't count this as an error. A compiler error
                 # might actually be the desired output of the cell.
                 self._send_error_result(err.stdout)
+            
             except Exception as err:
                 self._send_error_result(repr(err))
                 raise
+            
 
     def _should_compile(self):
         assert self._code, "Should not be querying for compilation with no code!"
@@ -145,7 +171,7 @@ class ElmKernel(Kernel):
             var obj = new Object();
             defineElm.bind(obj)(function(){{
                 var mountNode = document.getElementById('{div_id}');
-                obj.Elm. {module_name}.embed(mountNode);
+                obj.Elm. {module_name}.init({{ node: mountNode }});
             }});
         """
 
@@ -175,12 +201,12 @@ class ElmKernel(Kernel):
                 }
             })
 
-    def _copy_elm_package_file_to_tempdir(self):
-        """Copy elm-package.json to temporary directory where elm code is compiled
+    def _copy_elm_json_file_to_tempdir(self):
+        """Copy elm.json to temporary directory where elm code is compiled
         """
-        # existence of elm-package.json is not mandatory
-        if os.path.isfile('elm-package.json'):
-            shutil.copy('elm-package.json', self._tempdir.name)
+        # existence of elm.json is not mandatory
+        if os.path.isfile('elm.json'):
+            shutil.copy('elm.json', self._tempdir.name)
 
 if __name__ == '__main__':
     from ipykernel.kernelapp import IPKernelApp

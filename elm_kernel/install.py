@@ -23,8 +23,13 @@ def install_my_kernel_spec(user=True, prefix=None):
             json.dump(kernel_json, f, sort_keys=True)
 
         print('Installing Jupyter kernel spec')
-        KernelSpecManager().install_kernel_spec(
+        ksm = KernelSpecManager()
+        ksm.install_kernel_spec(
             td, 'elm', user=user, prefix=prefix)
+
+        install_dir = ksm.get_kernel_spec(kernel_name="elm").resource_dir
+
+        print("Installed to ", install_dir)
 
 
 def _is_root():
