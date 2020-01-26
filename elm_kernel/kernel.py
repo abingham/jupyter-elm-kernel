@@ -112,12 +112,11 @@ class ElmKernel(Kernel):
                 
                 self._elm_make(infile, outfile)
 
-
                 with open(outfile, mode='rt') as f:
                     javascript = f.read()
 
                 self._send_success_result(javascript)
-            
+
             except subprocess.CalledProcessError as err:
                 # When compilation fails we send the compiler output to the
                 # user but we don't count this as an error. A compiler error
@@ -212,7 +211,6 @@ class ElmKernel(Kernel):
         # existence of elm.json is not mandatory
         if os.path.isfile('elm.json'):
             shutil.copy('elm.json', self._tempdir.name)
-
 
 if __name__ == '__main__':
     from ipykernel.kernelapp import IPKernelApp
