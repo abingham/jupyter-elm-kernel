@@ -54,7 +54,7 @@ class ElmKernel(Kernel):
         }
 
     @contextlib.contextmanager
-    def _tempfile(self, filename):
+    def _temp_path(self, filename):
         """Yield `filename` inside the tempdir, but don't actually create the file.
         Then, on exit, delete the file if it exists.
         """
@@ -64,6 +64,7 @@ class ElmKernel(Kernel):
         finally:
             with contextlib.suppress(OSError):
                 os.remove(path)
+                shutil.rmtree(path, ignore_errors=True)
     
     def _elm_init(self):
         ''' Generate an init file in the temporary directory
@@ -94,9 +95,10 @@ class ElmKernel(Kernel):
     def _compile(self, code):
         self._copy_elm_json_file_to_tempdir()
 
-        with self._tempfile('input.elm') as infile,\
-             self._tempfile('index.js')  as outfile,\
-             self._tempfile('elm.json')  as elm_json:
+        with self._temp_path('input.elm') as infile,\
+             self._temp_path('index.js')  as outfile,\
+             self._temp_path('elm.json')  as elm_json,\
+             self._temp_path('src') as src_path:
 
             with open(infile, mode='wt') as f:
                 f.write(code)
@@ -105,6 +107,8 @@ class ElmKernel(Kernel):
                 # if elm.json doesn't exist yet, create it
                 if not os.path.isfile(elm_json):
                     self._elm_init()
+                if not os.path.isdir(src_path):
+                    os.mkdir(src_path)
                 
                 self._elm_make(infile, outfile)
 
