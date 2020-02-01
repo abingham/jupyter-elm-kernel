@@ -11,9 +11,9 @@ from tempfile import TemporaryDirectory
 
 class ElmKernel(Kernel):
     implementation = 'elm_kernel'
-    implementation_version = '0.21'
+    implementation_version = '0.21.1'
     language = 'no-op'
-    language_version = '0.19'
+    language_version = '0.19.1'
     language_info = {'name': 'elm',
                      'codemirror_mode': 'elm',
                      'mimetype': 'text/x-elm',
