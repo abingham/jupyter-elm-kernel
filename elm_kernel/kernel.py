@@ -25,6 +25,7 @@ class ElmKernel(Kernel):
         self._code = []
         self._tempdir = TemporaryDirectory()
 
+
     def do_shutdown(self, restart):
         self._tempdir.cleanup()
 
@@ -40,6 +41,7 @@ class ElmKernel(Kernel):
                 self._code = []
                 self._compile(code)
             except Exception as exc:
+
                 self._send_error_result(str(exc))
                 return {
                     'status': 'error',
@@ -63,8 +65,11 @@ class ElmKernel(Kernel):
             yield path
         finally:
             with contextlib.suppress(OSError):
-                os.remove(path)
-                shutil.rmtree(path, ignore_errors=True)
+                if os.path.isfile(path) or os.path.islink(path):
+                    os.remove(path)
+                else:
+                    shutil.rmtree(path, ignore_errors=True)
+
     
     def _elm_init(self):
         ''' Generate an init file in the temporary directory
@@ -93,7 +98,7 @@ class ElmKernel(Kernel):
 
 
     def _compile(self, code):
-        self._copy_elm_json_file_to_tempdir()
+        self._link_build_environment()
 
         with self._temp_path('input.elm') as infile,\
              self._temp_path('index.js')  as outfile,\
@@ -101,15 +106,16 @@ class ElmKernel(Kernel):
              self._temp_path('src') as src_path:
 
             with open(infile, mode='wt') as f:
+
                 f.write(code)
             
             try:
                 # if elm.json doesn't exist yet, create it
-                if not os.path.isfile(elm_json):
+                if not os.path.lexists(elm_json):
                     self._elm_init()
-                if not os.path.isdir(src_path):
+                if not os.path.lexists(src_path):
                     os.mkdir(src_path)
-                
+
                 self._elm_make(infile, outfile)
 
                 with open(outfile, mode='rt') as f:
@@ -205,12 +211,21 @@ class ElmKernel(Kernel):
                 }
             })
 
-    def _copy_elm_json_file_to_tempdir(self):
-        """Copy elm.json to temporary directory where elm code is compiled
+    def _link_build_environment(self):
+        """Link elm.json and src to temporary directory where elm code is compiled
         """
         # existence of elm.json is not mandatory
         if os.path.isfile('elm.json'):
-            shutil.copy('elm.json', self._tempdir.name)
+            # symlink requires abolute path
+            os.symlink(
+                os.path.join(os.getcwd(), 'elm.json'),
+                os.path.join(self._tempdir.name, 'elm.json'))
+
+        if os.path.isdir('src'):
+            os.symlink(
+                os.path.join(os.getcwd(), 'src'),
+                os.path.join(self._tempdir.name, 'src'))
+
 
 if __name__ == '__main__':
     from ipykernel.kernelapp import IPKernelApp
